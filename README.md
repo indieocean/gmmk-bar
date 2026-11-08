@@ -122,4 +122,6 @@ swift build -c release && .build/release/GMMKBar --screenshots "$PWD/docs"
 
 ## License
 
-Personal project, provided as-is with no warranty. If you share it, credit the projects above. OpenRGB is GPL-2.0-or-later; this app re-implements the protocol and doesn't copy OpenRGB's code.
+[MIT](LICENSE), provided as-is with no warranty. You use this software at your own risk, including any changes it makes to your keyboard's settings.
+
+OpenRGB is GPL-2.0-or-later. This app re-implements the protocol independently and contains no OpenRGB code. "Glorious" and "GMMK" are trademarks of their respective owners. The MIT license covers this project's code only and grants no rights to those trademarks.
