@@ -1,6 +1,17 @@
+<p align="center">
+  <img src="docs/banner.svg" alt="GMMK Lights — RGB control for the original GMMK TKL, right from your Mac's menu bar" width="100%">
+</p>
+
 # GMMK Lights
 
 A small macOS menu bar app for controlling the RGB lighting on a **first-generation GMMK TKL keyboard** (SONiX/EVision controller, USB ID `0C45:652F`).
+
+<p align="center">
+  <img src="docs/screenshot-dark.png" alt="Rainbow wave in dark mode" width="32%">
+  <img src="docs/screenshot-light.png" alt="Single-color long wave in light mode" width="32%">
+  <img src="docs/screenshot-breathing.png" alt="Orange breathing effect" width="32%">
+</p>
+<p align="center"><sub>Rainbow wave · single-color wave in light mode · breathing effect</sub></p>
 
 > **Disclaimer:** This is an independent, unofficial hobby project. It is **not affiliated with, endorsed by, or supported by Glorious LLC** or any of its partners. "Glorious" and "GMMK" are trademarks of their respective owners and are used here only to describe which hardware this app works with. Use at your own risk.
 
@@ -82,11 +93,19 @@ If the lights ever look dead, check the brightness first (Fn + ↑, or the brigh
 ```
 GMMKBar/
 ├── Package.swift
+├── docs/                        # README banner and screenshots
 ├── build.sh                     # builds and bundles the .app (ad-hoc signed)
 └── Sources/GMMKBar/
     ├── GMMKDevice.swift         # IOKit HID transport and the EVision protocol
     ├── Model.swift              # effects, presets, app state, launch at login
-    └── App.swift                # SwiftUI menu bar interface
+    ├── App.swift                # SwiftUI menu bar interface
+    └── Screenshots.swift        # renders the README screenshots offline
+```
+
+To regenerate the screenshots (no keyboard needed):
+
+```sh
+swift build -c release && .build/release/GMMKBar --screenshots "$PWD/docs"
 ```
 
 ## Ideas / roadmap

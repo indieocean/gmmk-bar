@@ -68,6 +68,13 @@ final class KeyboardController: ObservableObject {
     var isOn: Bool { state.brightness > 0 }
     var currentEffect: Effect? { Effect.named(state.mode) }
 
+    /// Offline instance with fixed state, used to render README screenshots. Never touches USB.
+    init(preview state: LightingState, presets: [Preset] = []) {
+        self.state = state
+        self.status = .connected
+        self.userPresets = presets
+    }
+
     init() {
         if let data = UserDefaults.standard.data(forKey: presetsKey),
            let saved = try? JSONDecoder().decode([Preset].self, from: data) {

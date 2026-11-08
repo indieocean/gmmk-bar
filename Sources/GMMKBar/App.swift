@@ -4,6 +4,15 @@ import SwiftUI
 struct GMMKBarApp: App {
     @StateObject private var keyboard = KeyboardController()
 
+    init() {
+        // `GMMKBar --screenshots <dir>` renders README screenshots offline and exits.
+        let args = CommandLine.arguments
+        if let i = args.firstIndex(of: "--screenshots"), i + 1 < args.count {
+            MainActor.assumeIsolated { Screenshots.render(to: URL(fileURLWithPath: args[i + 1])) }
+            exit(0)
+        }
+    }
+
     var body: some Scene {
         MenuBarExtra {
             ContentView()
