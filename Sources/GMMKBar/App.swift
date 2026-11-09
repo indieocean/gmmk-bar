@@ -54,6 +54,37 @@ struct ContentView: View {
         }
         .padding(14)
         .frame(width: 340)
+        .fixedSize(horizontal: false, vertical: true)
+        .background(WindowFitter())
+    }
+}
+
+/// MenuBarExtra(.window) doesn't shrink its window when content gets shorter (e.g. keyboard
+/// unplugged), leaving a tall transparent panel. This resizes the host window to the content's
+/// fitting size whenever layout changes, keeping the top edge pinned under the menu bar.
+struct WindowFitter: NSViewRepresentable {
+    func makeNSView(context: Context) -> FitterView { FitterView() }
+    func updateNSView(_ view: FitterView, context: Context) { view.scheduleFit() }
+
+    final class FitterView: NSView {
+        override func viewDidMoveToWindow() { super.viewDidMoveToWindow(); scheduleFit() }
+        override func layout() { super.layout(); scheduleFit() }
+
+        func scheduleFit() {
+            DispatchQueue.main.async { [weak self] in self?.fit() }
+        }
+
+        private func fit() {
+            guard let window, let content = window.contentView else { return }
+            let target = content.fittingSize
+            guard target.height > 0, abs(window.frame.height - target.height) > 0.5
+                || abs(window.frame.width - target.width) > 0.5 else { return }
+            var frame = window.frame
+            let top = frame.maxY
+            frame.size = window.frameRect(forContentRect: NSRect(origin: .zero, size: target)).size
+            frame.origin.y = top - frame.height
+            window.setFrame(frame, display: true, animate: false)
+        }
     }
 }
 
