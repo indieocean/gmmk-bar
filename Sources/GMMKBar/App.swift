@@ -1,69 +1,26 @@
 import SwiftUI
-import Combine
 
-/// Plain AppKit entry point. A SwiftUI `App` needs at least one scene, and a placeholder
-/// Settings scene pops up as an empty window when the app is reopened.
 @main
-@MainActor
-enum GMMKBarApp {
-    private static let delegate = StatusBarController()
+struct GMMKBarApp: App {
+    @StateObject private var keyboard = KeyboardController()
 
-    static func main() {
+    init() {
         // `GMMKBar --screenshots <dir>` renders README screenshots offline and exits.
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--screenshots"), i + 1 < args.count {
-            Screenshots.render(to: URL(fileURLWithPath: args[i + 1]))
+            MainActor.assumeIsolated { Screenshots.render(to: URL(fileURLWithPath: args[i + 1])) }
             exit(0)
         }
-        let app = NSApplication.shared
-        app.setActivationPolicy(.accessory)
-        app.delegate = delegate
-        app.run()
-    }
-}
-
-/// Owns a fixed square-width NSStatusItem and a popover hosting the SwiftUI panel.
-/// (SwiftUI's MenuBarExtra sized its item wider than a single icon slot.)
-@MainActor
-final class StatusBarController: NSObject, NSApplicationDelegate {
-    private let keyboard = KeyboardController()
-    private var statusItem: NSStatusItem!
-    private let popover = NSPopover()
-    private var cancellable: AnyCancellable?
-
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.target = self
-        statusItem.button?.action = #selector(togglePopover)
-
-        popover.behavior = .transient
-        popover.animates = false
-        popover.contentViewController = NSHostingController(
-            rootView: ContentView().environmentObject(keyboard))
-
-        updateIcon()
-        // objectWillChange fires before the value changes; hop to the next runloop turn to read the new state.
-        cancellable = keyboard.objectWillChange
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.updateIcon() }
     }
 
-    private func updateIcon() {
-        let name = keyboard.isConnected && keyboard.isOn ? "keyboard.fill" : "keyboard"
-        let image = NSImage(systemSymbolName: name, accessibilityDescription: "GMMK Lights")
-        image?.isTemplate = true
-        statusItem.button?.image = image
-    }
-
-    @objc private func togglePopover() {
-        guard let button = statusItem.button else { return }
-        if popover.isShown {
-            popover.performClose(nil)
-        } else {
-            NSApp.activate(ignoringOtherApps: true)
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            popover.contentViewController?.view.window?.makeKey()
+    var body: some Scene {
+        MenuBarExtra {
+            ContentView()
+                .environmentObject(keyboard)
+        } label: {
+            Image(systemName: keyboard.isConnected && keyboard.isOn ? "keyboard.fill" : "keyboard")
         }
+        .menuBarExtraStyle(.window)
     }
 }
 
