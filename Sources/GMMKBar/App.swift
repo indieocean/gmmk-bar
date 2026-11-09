@@ -1,22 +1,24 @@
 import SwiftUI
 import Combine
 
+/// Plain AppKit entry point. A SwiftUI `App` needs at least one scene, and a placeholder
+/// Settings scene pops up as an empty window when the app is reopened.
 @main
-struct GMMKBarApp: App {
-    @NSApplicationDelegateAdaptor(StatusBarController.self) private var statusBar
+@MainActor
+enum GMMKBarApp {
+    private static let delegate = StatusBarController()
 
-    init() {
+    static func main() {
         // `GMMKBar --screenshots <dir>` renders README screenshots offline and exits.
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--screenshots"), i + 1 < args.count {
-            MainActor.assumeIsolated { Screenshots.render(to: URL(fileURLWithPath: args[i + 1])) }
+            Screenshots.render(to: URL(fileURLWithPath: args[i + 1]))
             exit(0)
         }
-    }
-
-    // The menu bar item is managed in AppKit (see StatusBarController); this scene is never shown.
-    var body: some Scene {
-        Settings { EmptyView() }
+        let app = NSApplication.shared
+        app.setActivationPolicy(.accessory)
+        app.delegate = delegate
+        app.run()
     }
 }
 
